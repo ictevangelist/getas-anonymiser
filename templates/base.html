@@ -5,17 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Entry Anonymiser{% endblock %} · Global EdTech Awards</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700&family=Poppins:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jura:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <header class="top">
-  <a class="brand" href="{{ url_for('index') }}">Entry Anonymiser <span>Global EdTech Awards</span></a>
+  <a class="brand" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='logo.svg') }}" alt="Global EdTech"></a>
   {% if session.user %}
-  <form method="post" action="{{ url_for('logout') }}"><button class="link">Sign out</button></form>
+  <nav>
+    <a href="{{ url_for('index') }}">Entries</a>
+    <form method="post" action="{{ url_for('logout') }}"><button class="link">Sign out</button></form>
+  </nav>
   {% endif %}
 </header>
+<section class="hero">
+  <div class="hero-inner">{% block hero %}{% endblock %}</div>
+  <svg class="wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,40 C240,95 420,0 720,35 C1000,68 1180,10 1440,45 L1440,90 L0,90 Z" fill="currentColor" opacity=".35"/>
+    <path d="M0,60 C260,100 460,20 760,55 C1040,86 1220,35 1440,62 L1440,90 L0,90 Z" fill="currentColor"/>
+  </svg>
+</section>
 <main>
   {% for message in get_flashed_messages() %}<p class="flash">{{ message }}</p>{% endfor %}
   {% block content %}{% endblock %}

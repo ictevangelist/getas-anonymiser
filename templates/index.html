@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Entries{% endblock %}
+{% block hero %}
+  <h1>Entry <span>Anonymiser</span></h1>
+  {% set ready = entries|selectattr('checked')|list|length %}
+  <p class="lede">{{ entries|length }} entr{{ 'y' if entries|length == 1 else 'ies' }} · {{ ready }} checked and ready for judges</p>
+{% endblock %}
 {% block content %}
 <section class="card">
-  <h1>Add an entry</h1>
+  <h2>Add an entry</h2>
   <form method="post" action="{{ url_for('create') }}" enctype="multipart/form-data" class="grid">
     <label>Entry label <small>For your reference only, never shown to judges. For example: Headteacher, Jane Smith</small>
       <input name="label" required></label>

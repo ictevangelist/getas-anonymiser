@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% block title %}{{ e.code }}{% endblock %}
 {% block head %}{% if e.status == 'processing' %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+{% block hero %}
+  <p class="crumb"><a href="{{ url_for('index') }}">&larr; All entries</a></p>
+  <h1>{{ e.code }}</h1>
+  <p class="lede">{{ e.label }} · added {{ e.created }}</p>
+{% endblock %}
 {% block content %}
-<p><a href="{{ url_for('index') }}">&larr; All entries</a></p>
 <section class="card">
   <div class="row">
-    <div>
-      <h1>{{ e.code }}</h1>
-      <p class="muted">{{ e.label }} · added {{ e.created }}</p>
-    </div>
+    <h2>{% if e.status == 'processing' %}Working on it{% elif e.status == 'error' %}Needs attention{% elif e.checked %}Checked and ready for judges{% else %}Ready to check{% endif %}</h2>
     {% if e.status == 'ready' %}
     <div class="actions">
       <form method="post" action="{{ url_for('mark_checked', code=e.code) }}">
