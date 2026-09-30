@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Entries{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Add an entry</h1>
+  <form method="post" action="{{ url_for('create') }}" enctype="multipart/form-data" class="grid">
+    <label>Entry label <small>For your reference only, never shown to judges. For example: Headteacher, Jane Smith</small>
+      <input name="label" required></label>
+    <label>Names from the entry form <small>Entrant, nominee, school or company. One per line.</small>
+      <textarea name="names" rows="4"></textarea></label>
+    <label>Entry PDFs <small>The entry and any testimonials, up to six files.</small>
+      <input type="file" name="pdfs" accept="application/pdf" multiple required></label>
+    <button class="primary">Anonymise</button>
+  </form>
+</section>
+
+<section class="card">
+  <div class="row">
+    <h2>Entries</h2>
+    <div class="actions">
+      <a class="button" href="{{ url_for('download_all') }}">Download checked entries for judges</a>
+      <a class="button quiet" href="{{ url_for('download_key') }}">Download key (private)</a>
+    </div>
+  </div>
+  {% if entries %}
+  <table>
+    <thead><tr><th>Code</th><th>Entry</th><th>Files</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for e in entries %}
+      <tr>
+        <td><a href="{{ url_for('entry', code=e.code) }}">{{ e.code }}</a></td>
+        <td>{{ e.label }}</td>
+        <td>{{ e.files|length }}</td>
+        <td>{% if e.status == 'processing' %}<span class="tag wait">Working</span>
+            {% elif e.status == 'error' %}<span class="tag bad">Problem</span>
+            {% elif e.checked %}<span class="tag good">Checked</span>
+            {% else %}<span class="tag todo">Needs checking</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">No entries yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

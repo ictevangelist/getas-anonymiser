@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ e.code }}{% endblock %}
+{% block head %}{% if e.status == 'processing' %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('index') }}">&larr; All entries</a></p>
+<section class="card">
+  <div class="row">
+    <div>
+      <h1>{{ e.code }}</h1>
+      <p class="muted">{{ e.label }} · added {{ e.created }}</p>
+    </div>
+    {% if e.status == 'ready' %}
+    <div class="actions">
+      <form method="post" action="{{ url_for('mark_checked', code=e.code) }}">
+        {% if e.checked %}
+          <input type="hidden" name="checked" value="0"><button class="quiet">Checked ✓ (undo)</button>
+        {% else %}
+          <input type="hidden" name="checked" value="1"><button class="primary">Mark as checked</button>
+        {% endif %}
+      </form>
+      <a class="button quiet" href="{{ url_for('download_entry', code=e.code) }}">Download judges' copy</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if e.status == 'processing' %}
+    <p class="notice">Claude is reading the entry. This usually takes a minute or two per file; this page updates by itself.</p>
+  {% elif e.status == 'error' %}
+    <p class="notice bad">Something went wrong: {{ e.error }}</p>
+    <form method="post" action="{{ url_for('rescan', code=e.code) }}"><button class="primary">Try again</button></form>
+  {% endif %}
+</section>
+
+{% if e.status == 'ready' %}
+<section class="card">
+  <h2>Adjust</h2>
+  <form method="post" action="{{ url_for('update', code=e.code) }}" class="grid two">
+    <label>Also redact <small>Anything missed. One per line, exactly as it appears.</small>
+      <textarea name="names" rows="5">{{ e.names|join('\n') }}</textarea></label>
+    <label>Don't redact <small>Anything removed that judges should see. One per line.</small>
+      <textarea name="keep" rows="5">{{ e.keep|join('\n') }}</textarea></label>
+    <div class="actions"><button class="primary">Apply changes</button></div>
+  </form>
+</section>
+
+{% for f in e.files %}{% set r = f.report %}
+<section class="card">
+  <h2>{{ f.name }}</h2>
+  {% if r.scanned %}<p class="notice bad">This file has no readable text (it may be scanned), so nothing could be redacted. Please check it by hand or ask the entrant for a text PDF.</p>{% endif %}
+  {% if r.not_found %}<p class="notice">Claude spotted these but they couldn't be found in the text, so please check by eye: <strong>{{ r.not_found|join(', ') }}</strong></p>{% endif %}
+  {% if r.notes %}<p class="muted">Claude's notes: {{ r.notes }}</p>{% endif %}
+  <details><summary>{{ r.redacted|length }} items redacted{% if r.image_pages %}, images removed on page{{ 's' if r.image_pages|length > 1 }} {{ r.image_pages|join(', ') }}{% endif %}</summary>
+    <ul class="chips">{% for item in r.redacted %}<li><span>{{ item.kind }}</span> {{ item.text }} ×{{ item.count }}</li>{% endfor %}</ul>
+  </details>
+  {% for n in range(1, r.pages + 1) %}
+  <div class="pages">
+    <figure><figcaption>Original, page {{ n }} (highlighted = will be removed)</figcaption>
+      <img loading="lazy" src="{{ url_for('page_image', code=e.code, stem=f.stem, number=n, which='preview') }}" alt="Original page {{ n }}"></figure>
+    <figure><figcaption>What judges see, page {{ n }}</figcaption>
+      <img loading="lazy" src="{{ url_for('page_image', code=e.code, stem=f.stem, number=n, which='judges') }}" alt="Redacted page {{ n }}"></figure>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+{% endif %}
+
+<section class="card">
+  <h2>Other options</h2>
+  <div class="actions">
+    {% if e.status == 'ready' %}<form method="post" action="{{ url_for('rescan', code=e.code) }}" onsubmit="return confirm('Ask Claude to read this entry again from scratch?')"><button class="quiet">Ask Claude to read it again</button></form>{% endif %}
+    <form method="post" action="{{ url_for('delete', code=e.code) }}" onsubmit="return confirm('Delete this entry and all its files? This cannot be undone.')"><button class="danger">Delete entry</button></form>
+  </div>
+</section>
+{% endblock %}

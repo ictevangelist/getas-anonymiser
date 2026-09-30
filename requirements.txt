@@ -1,0 +1,4 @@
+anthropic>=1.9
+pymupdf>=1.26
+flask>=3.1
+gunicorn>=23

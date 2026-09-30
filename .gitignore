@@ -1,0 +1,6 @@
+# Entries contain personal data: never commit them.
+data/
+*.pdf
+*.csv
+__pycache__/
+.env
